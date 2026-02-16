@@ -1,0 +1,77 @@
+import java.util.Scanner;
+import java.util.Stack;
+import java.util.ArrayList;
+
+public class Main {
+    public static double calculate(String expr){
+        expr = expr.trim();
+
+        // Base case
+        if (!expr.contains("+") && !expr.contains("-") &&
+                !expr.contains("*") && !expr.contains("/")) {
+            return Double.parseDouble(expr);
+        }
+
+        // Priority: first *,/
+        for(int i=0;i<expr.length();i++){
+            char c = expr.charAt(i);
+            if(c=='*' || c=='/'){
+                expr = evaluateAt(expr,i);
+                return calculate(expr);
+            }
+        }
+
+        // Then +,-
+        for(int i=0;i<expr.length();i++){
+            char c = expr.charAt(i);
+            if((c=='+' || c=='-') && i>0 && Character.isDigit(expr.charAt(i - 1))){
+                expr = evaluateAt(expr,i);
+                return calculate(expr);
+            }
+        }
+
+        return Double.parseDouble(expr);
+    }
+
+    private static String evaluateAt(String expr, int opIndex) {
+        int left = opIndex - 1;
+        while (left >= 0 && (Character.isDigit(expr.charAt(left))||expr.charAt(left)=='.')) left--;
+        left++;
+
+        int right = opIndex + 1;
+        while (right < expr.length() && (Character.isDigit(expr.charAt(right))||expr.charAt(left)=='.')) right++;
+
+        double a = Double.parseDouble(expr.substring(left, opIndex));
+        double b = Double.parseDouble(expr.substring(opIndex + 1, right));
+
+        double result = 0;
+        switch (expr.charAt(opIndex)) {
+            case '*': result = a * b; break;
+            case '/': result = a / b; break;
+            case '+': result = a + b; break;
+            case '-': result = a - b; break;
+        }
+
+        return expr.substring(0, left) + result + expr.substring(right);
+    }
+
+
+    public static void main(String[] args) {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Give calculation:");
+        String num = scan.nextLine();
+
+        while (num.contains("(")) {
+            int end = num.indexOf(')');
+            int start = num.lastIndexOf('(', end);
+
+            String inside = num.substring(start + 1, end);
+            double value = calculate(inside);
+
+            num = num.substring(0, start) + value + num.substring(end + 1);
+        }
+
+        System.out.println(calculate(num));
+    }
+}
+
